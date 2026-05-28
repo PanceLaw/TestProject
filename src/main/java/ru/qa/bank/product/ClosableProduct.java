@@ -1,9 +1,9 @@
 package ru.qa.bank.product;
 
-import ru.qa.bank.model.Money;
+import java.math.BigDecimal;
 
 public interface ClosableProduct {
-    Money close();
+    BigDecimal close();
 
     boolean isClosed();
 }

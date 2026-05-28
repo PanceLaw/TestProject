@@ -2,21 +2,23 @@ package ru.qa.bank.product;
 
 import ru.qa.bank.exception.InvalidAmountException;
 import ru.qa.bank.model.Currency;
-import ru.qa.bank.model.Money;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public abstract class AbstractBankProduct implements BankProduct {
     private final String name;
-    protected Money balance;
+    private final Currency currency;
+    protected BigDecimal balance;
 
-    protected AbstractBankProduct(String name, Money balance) {
+    protected AbstractBankProduct(String name, Currency currency, BigDecimal balance) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Nazvanie produkta ne dolzhno byt pustym");
+            throw new IllegalArgumentException("Product name must not be blank");
         }
 
         this.name = name;
-        this.balance = Objects.requireNonNull(balance, "Balans ne dolzhen byt null");
+        this.currency = Objects.requireNonNull(currency, "Currency must not be null");
+        this.balance = validateInitialBalance(balance);
     }
 
     @Override
@@ -26,17 +28,25 @@ public abstract class AbstractBankProduct implements BankProduct {
 
     @Override
     public Currency getCurrency() {
-        return balance.currency();
+        return currency;
     }
 
     @Override
-    public Money getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    protected void validatePositiveMoney(Money amount) {
-        if (amount == null || !amount.isGreaterThanZero()) {
-            throw new InvalidAmountException("Summa dolzhna byt bolshe nulya");
+    protected void validatePositiveAmount(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException("Amount must be positive");
         }
+    }
+
+    private BigDecimal validateInitialBalance(BigDecimal balance) {
+        if (balance == null || balance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new InvalidAmountException("Initial balance must be zero or positive");
+        }
+
+        return balance;
     }
 }

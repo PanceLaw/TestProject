@@ -1,12 +1,13 @@
 package ru.qa.bank.product;
 
 import ru.qa.bank.model.Currency;
-import ru.qa.bank.model.Money;
+
+import java.math.BigDecimal;
 
 public interface BankProduct {
     String getName();
 
     Currency getCurrency();
 
-    Money getBalance();
+    BigDecimal getBalance();
 }

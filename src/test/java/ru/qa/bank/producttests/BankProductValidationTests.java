@@ -1,99 +1,57 @@
 package ru.qa.bank.producttests;
 
-import ru.qa.bank.product.*;
-
-import ru.qa.bank.exception.CurrencyMismatchException;
-import ru.qa.bank.exception.InvalidAmountException;
-import ru.qa.bank.model.Currency;
-import ru.qa.bank.model.Money;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import ru.qa.bank.exception.InvalidAmountException;
+import ru.qa.bank.model.Currency;
+import ru.qa.bank.product.card.DebitCard;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static ru.qa.bank.testdata.TestMoney.money;
-import static ru.qa.bank.testdata.TestMoney.rub;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BankProductValidationTests {
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {" ", "   "})
-    void blankNameThrowsTest(String name) {
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> new DebitCard(name, rub(10))
-        );
-
-        assertEquals("Nazvanie produkta ne dolzhno byt pustym", exception.getMessage());
+    void blankNameRejectedTest(String name) {
+        assertThatThrownBy(() -> new DebitCard(name, Currency.RUB, BigDecimal.TEN))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Product name must not be blank");
     }
 
     @Test
-    void nullCurrencyThrowsTest() {
-        NullPointerException exception = assertThrows(
-                NullPointerException.class,
-                () -> new Money(BigDecimal.TEN, null)
-        );
-
-        assertEquals("Valyuta ne dolzhna byt null", exception.getMessage());
+    void nullCurrencyRejectedTest() {
+        assertThatThrownBy(() -> new DebitCard("Debit card", null, BigDecimal.TEN))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("Currency must not be null");
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"-1", "-100.50"})
-    void negativeMoneyThrowsTest(String amount) {
-        InvalidAmountException exception = assertThrows(
-                InvalidAmountException.class,
-                () -> new Money(new BigDecimal(amount), Currency.RUB)
-        );
-
-        assertEquals("Summa ne mozhet byt otricatelnoy", exception.getMessage());
+    void negativeInitialBalanceRejectedTest(String balance) {
+        assertThatThrownBy(() -> new DebitCard("Debit card", Currency.RUB, new BigDecimal(balance)))
+                .isInstanceOf(InvalidAmountException.class)
+                .hasMessage("Initial balance must be zero or positive");
     }
 
     @Test
-    void zeroDepositAmountThrowsTest() {
-        DebitCard card = new DebitCard("Debit card", rub(10));
+    void zeroDepositAmountRejectedTest() {
+        DebitCard card = new DebitCard("Debit card", Currency.RUB, BigDecimal.TEN);
 
-        InvalidAmountException exception = assertThrows(
-                InvalidAmountException.class,
-                () -> card.deposit(new Money(BigDecimal.ZERO, Currency.RUB))
-        );
-
-        assertEquals("Summa dolzhna byt bolshe nulya", exception.getMessage());
+        assertThatThrownBy(() -> card.deposit(BigDecimal.ZERO))
+                .isInstanceOf(InvalidAmountException.class)
+                .hasMessage("Amount must be positive");
     }
 
     @Test
-    void moneyScaleIsNormalizedTest() {
-        assertEquals(
-                money("10.00", Currency.RUB),
-                money("10.0", Currency.RUB)
-        );
-    }
+    void nullDepositAmountRejectedTest() {
+        DebitCard card = new DebitCard("Debit card", Currency.RUB, BigDecimal.TEN);
 
-    @Test
-    void nullDepositAmountThrowsTest() {
-        DebitCard card = new DebitCard("Debit card", rub(10));
-
-        InvalidAmountException exception = assertThrows(
-                InvalidAmountException.class,
-                () -> card.deposit(null)
-        );
-
-        assertEquals("Summa dolzhna byt bolshe nulya", exception.getMessage());
-    }
-
-    @Test
-    void wrongCurrencyThrowsTest() {
-        DebitCard card = new DebitCard("Debit card", rub(10));
-
-        CurrencyMismatchException exception = assertThrows(
-                CurrencyMismatchException.class,
-                () -> card.deposit(new Money(BigDecimal.ONE, Currency.USD))
-        );
-
-        assertEquals("Valyuty denezhnyh summ dolzhny sovpadat", exception.getMessage());
+        assertThatThrownBy(() -> card.deposit(null))
+                .isInstanceOf(InvalidAmountException.class)
+                .hasMessage("Amount must be positive");
     }
 }
-

@@ -1,7 +1,7 @@
 package ru.qa.bank.product;
 
-import ru.qa.bank.model.Money;
+import java.math.BigDecimal;
 
 public interface Replenishable {
-    void deposit(Money amount);
+    void deposit(BigDecimal amount);
 }
