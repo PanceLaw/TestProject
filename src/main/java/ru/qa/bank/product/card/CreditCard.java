@@ -38,7 +38,7 @@ public class CreditCard extends AbstractCard {
         }
 
         if (amount.compareTo(BigDecimal.ZERO) > 0) {
-            balance = balance.add(amount);
+            increaseBalance(amount);
         }
     }
 
@@ -46,19 +46,19 @@ public class CreditCard extends AbstractCard {
     public void withdraw(BigDecimal amount) {
         validatePositiveAmount(amount);
 
-        if (balance.compareTo(amount) >= 0) {
-            balance = balance.subtract(amount);
+        if (getBalance().compareTo(amount) >= 0) {
+            decreaseBalance(amount);
             return;
         }
 
-        BigDecimal debtIncrease = amount.subtract(balance);
+        BigDecimal debtIncrease = amount.subtract(getBalance());
         BigDecimal newDebt = debt.add(debtIncrease);
 
         if (newDebt.compareTo(creditLimit) > 0) {
             throw new InsufficientFundsException("Credit limit exceeded");
         }
 
-        balance = BigDecimal.ZERO;
+        setBalance(BigDecimal.ZERO);
         debt = newDebt;
     }
 
@@ -75,7 +75,7 @@ public class CreditCard extends AbstractCard {
     }
 
     public BigDecimal getAvailableFunds() {
-        return balance.add(creditLimit).subtract(debt);
+        return getBalance().add(creditLimit).subtract(debt);
     }
 
     private void validatePositiveRate(BigDecimal interestRate) {

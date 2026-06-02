@@ -23,7 +23,7 @@ public class Deposit extends AbstractBankProduct implements Replenishable, Closa
         }
 
         validatePositiveAmount(amount);
-        balance = balance.add(amount);
+        increaseBalance(amount);
     }
 
     @Override
@@ -32,9 +32,9 @@ public class Deposit extends AbstractBankProduct implements Replenishable, Closa
             throw new ProductClosedException("Deposit is already closed");
         }
 
-        BigDecimal payout = balance;
+        BigDecimal payout = getBalance();
         closed = true;
-        balance = BigDecimal.ZERO;
+        setBalance(BigDecimal.ZERO);
         return payout;
     }
 

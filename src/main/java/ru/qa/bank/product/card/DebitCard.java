@@ -15,10 +15,10 @@ public class DebitCard extends AbstractCard {
     public void withdraw(BigDecimal amount) {
         validatePositiveAmount(amount);
 
-        if (balance.compareTo(amount) < 0) {
+        if (getBalance().compareTo(amount) < 0) {
             throw new InsufficientFundsException("Insufficient funds");
         }
 
-        balance = balance.subtract(amount);
+        decreaseBalance(amount);
     }
 }

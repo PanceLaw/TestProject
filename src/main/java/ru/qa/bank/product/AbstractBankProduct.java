@@ -9,7 +9,7 @@ import java.util.Objects;
 public abstract class AbstractBankProduct implements BankProduct {
     private final String name;
     private final Currency currency;
-    protected BigDecimal balance;
+    private BigDecimal balance;
 
     protected AbstractBankProduct(String name, Currency currency, BigDecimal balance) {
         if (name == null || name.isBlank()) {
@@ -40,6 +40,20 @@ public abstract class AbstractBankProduct implements BankProduct {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidAmountException("Amount must be positive");
         }
+    }
+
+    protected void increaseBalance(BigDecimal amount) {
+        validatePositiveAmount(amount);
+        balance = balance.add(amount);
+    }
+
+    protected void decreaseBalance(BigDecimal amount) {
+        validatePositiveAmount(amount);
+        balance = balance.subtract(amount);
+    }
+
+    protected void setBalance(BigDecimal balance) {
+        this.balance = validateInitialBalance(balance);
     }
 
     private BigDecimal validateInitialBalance(BigDecimal balance) {

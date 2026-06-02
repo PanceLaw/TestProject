@@ -11,7 +11,6 @@ public abstract class AbstractCard extends AbstractBankProduct implements Replen
 
     @Override
     public void deposit(BigDecimal amount) {
-        validatePositiveAmount(amount);
-        balance = balance.add(amount);
+        increaseBalance(amount);
     }
 }
